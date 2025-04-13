@@ -1,0 +1,10 @@
+images/*.dpth
+images/*.log
+images/*.md5
+images/*.pdf
+images/*.aux
+images/*.auxlock
+images/*.fdb_latexmk
+images/*.drivers
+images/*.fls
+images/*.synctex.gz
