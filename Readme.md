@@ -16,30 +16,44 @@ In addition, the DIAG pin is required for the StallGuard output.
 
 I modified the Lerdge TMC2209's as follows:
 
-* Replace pullup on ENN by pulldown (yellow) 
-* Disconnect ENN from Pin 1 of the driver board
-* Route the DIAG pin to Pin 1 of the board
-* Add pin headers for RX + TX
+* &#9312;  Replace pullup on ENN by pulldown (yellow)
+* &#9313;(a) Disconnect ENN from pin 1 of the driver board
+* &#9313;(b) Route the DIAG pin to pin 1 of the board
+* &#9314;(a) Remove pulldown on PDN_UART (R1)
+* &#9314;(b) Add 1k resistor between Rx and Tx (R8) (*)
+* &#9315; Add pin headers for RX + TX
+
+
+(*) exists on both boards, so impedance between RX and TX is 500R.
 
 The pulldown enables the driver on power-up.
 ENN is low-active.
 PDN_UART must remain high and cannot be used for power down.
 The driver can still be powered down using the UART connection.
 
-The PDN_UART pullup is not on the driver board, since there are but on the mainboard.
+The PDN_UART pullup is not on the driver board.
 Having the pullup on the driver board would parallelize the pullups and reduce resistance.
 
 > The node address NODEADDR is selected by MS1 (bit 0) and MS2 (bit 1) in the range 0 to 3
 
-Since MS1 and MS2 are connected to the microcontroller, they can be set in software.
+Since MS1 and MS2 are connected to a jumper block on the mainboard, they can be set externally.
 
 In retrospect, I'm not sure if it is worth doing this modification.
 
-![](images/lerdge-figure0.png)
+![](images/drivers-figure0.png)
 
 ### Z+E: TMC2208
 
 With X+Y upgraded to TMC2209, I moved the TMC2208 from X+Y to Z+E.
+
+The TMC2208's have also been modified for UART connection.
+
+* &#9312; Disconnect ENN from pin 1
+* &#9313; Switch pullup on ENN to pulldown
+* &#9314; Connect PDN_UART with 1k series resistor to pin 4
+* &#9315; Connect PDN_UART (pin 4) to pin 1 (not visible; wire on other side)
+
+![](images/drivers-figure1.png)
 
 ## Mainboard
 
@@ -49,10 +63,24 @@ Changed output voltage of U1 (MP1584EN) from 5V to 3.3V by adjusting feedback re
 Removed 3.3V LDO U6.
 Thus, the board does not have a 5V-rail anymore.
 
-I don't remember why I did this, but I think it was because there is actually no 5V consumer on the board.
+~~I don't remember why I did this, but I think it was because there is actually no 5V consumer on the board.~~
+The stepper drivers use 5V for VCC_IO. That needs to be 3.3V to interface with the microcontroller.
 
-CAUTION: J13 cannot be set anymore, that would connect V_USB (5V nom) to the 3.3V rail.
+VCC:
+* FPC (not connected on remote end)
+* Detectors (PW_DET, MT_DET1, MT_DET2, J5)
+* J16: Touch probe
+* TC: unknown
+* J18: serial header
+* Stepper: VCC + pullups on EN + J1 (Jumper for MSx); Note: STEP + DIR have series resistors.
+* J6-J9: Endstop headeers
+
+**CAUTION**: J13 cannot be set anymore, that would connect V_USB (5V nom) to the 3.3V rail.
 
 ## Bed Levelling Probe
 
 I added a 5V induction probe for bed levelling.
+
+# Configuration
+
+On the mainboard, the X-axis stepper is configured for address 0 and the Y-axis stepper is configured for address 1.
